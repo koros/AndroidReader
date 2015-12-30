@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">AndroidReader</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="lorem">
+
+         In statistical learning theory, or sometimes computational learning theory, the VC dimension (for Vapnik–Chervonenkis dimension) is a measure of the capacity of a statistical classification algorithm, defined as the cardinality of the largest set of points that the algorithm can shatter. It is a core concept in Vapnik–Chervonenkis theory, and was originally defined by Vladimir Vapnik and Alexey Chervonenkis.
+
+Informally, the capacity of a classification model is related to how complicated it can be. For example, consider the thresholding of a high-degree polynomial: if the polynomial evaluates above zero, that point is classified as positive, otherwise as negative. A high-degree polynomial can be wiggly, so it can fit a given set of training points well. But one can expect that the classifier will make errors on other points, because it is too wiggly. Such a polynomial has a high capacity. A much simpler alternative is to threshold a linear function. This function may not fit the training set well, because it has a low capacity. This notion of capacity is made more rigorous below.
+A classification model f with some parameter vector heta is said to shatter a set of data points (x_1,x_2,\ldots,x_n) if, for all assignments of labels to those points, there exists a \theta such that the model f makes no errors when evaluating that set of data points.
+
+The VC dimension of a model f is the maximum number of points that can be arranged so that f shatters them. More formally, it is h\' where h\' is the maximum h such that some data point set of cardinality h can be shattered by f.
+
+For example, consider a straight line as the classification model: the model used by a perceptron. The line should separate positive data points from negative data points. There exist sets of 3 points that can indeed be shattered using this model (any 3 points that are not collinear can be shattered). However, no set of 4 points can be shattered: by Radon\'s theorem, any four points can be partitioned into two subsets with intersecting convex hulls, so it is not possible to separate one of these two subsets from the other. Thus, the VC dimension of this particular classifier is 3. It is important to remember that while one can choose any arrangement of points, the arrangement of those points cannot change when attempting to shatter for some label assignment. Note, only 3 of the 23 = 8 possible label assignments are shown for the three points.
+        In statistical learning theory, or sometimes computational learning theory, the VC dimension (for Vapnik–Chervonenkis dimension) is a measure of the capacity of a statistical classification algorithm, defined as the cardinality of the largest set of points that the algorithm can shatter. It is a core concept in Vapnik–Chervonenkis theory, and was originally defined by Vladimir Vapnik and Alexey Chervonenkis.
+
+Informally, the capacity of a classification model is related to how complicated it can be. For example, consider the thresholding of a high-degree polynomial: if the polynomial evaluates above zero, that point is classified as positive, otherwise as negative. A high-degree polynomial can be wiggly, so it can fit a given set of training points well. But one can expect that the classifier will make errors on other points, because it is too wiggly. Such a polynomial has a high capacity. A much simpler alternative is to threshold a linear function. This function may not fit the training set well, because it has a low capacity. This notion of capacity is made more rigorous below.
+A classification model f with some parameter vector heta is said to shatter a set of data points (x_1,x_2,\ldots,x_n) if, for all assignments of labels to those points, there exists a \theta such that the model f makes no errors when evaluating that set of data points.
+
+The VC dimension of a model f is the maximum number of points that can be arranged so that f shatters them. More formally, it is h\' where h\' is the maximum h such that some data point set of cardinality h can be shattered by f.
+
+For example, consider a straight line as the classification model: the model used by a perceptron. The line should separate positive data points from negative data points. There exist sets of 3 points that can indeed be shattered using this model (any 3 points that are not collinear can be shattered). However, no set of 4 points can be shattered: by Radon\'s theorem, any four points can be partitioned into two subsets with intersecting convex hulls, so it is not possible to separate one of these two subsets from the other. Thus, the VC dimension of this particular classifier is 3. It is important to remember that while one can choose any arrangement of points, the arrangement of those points cannot change when attempting to shatter for some label assignment. Note, only 3 of the 23 = 8 possible label assignments are shown for the three points.
+
+     </string>
+
+
+</resources>
