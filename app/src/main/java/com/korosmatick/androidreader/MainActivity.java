@@ -1,26 +1,24 @@
 package com.korosmatick.androidreader;
 
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextPaint;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.ShareActionProvider;
+import android.widget.ProgressBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,28 +26,26 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mPager;
     private FragmentPagerAdapter mPagerAdapter;
 
-    private static List<String> pageContents = new ArrayList<String>();
-    LinearLayout mPageIndicator = null;
+    private Map<String, String> mPages = new HashMap<String, String>();
+    private LinearLayout mPageIndicator = null;
+    private ProgressBar mProgressBar = null;
+
+    private String mContentString = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
-        //===========================================================
-        // Calculate ActionBar height
-        /*TypedValue tv = new TypedValue();
-        int actionBarHeight = 60;
-        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
-            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-        }*/
-        //===========================================================
+        mProgressBar = (ProgressBar) findViewById(R.id.progress);
 
         ViewGroup textviewPage = (ViewGroup) getLayoutInflater().inflate(R.layout.fragment, (ViewGroup) getWindow().getDecorView().findViewById(android.R.id.content) , false);
-        TextView contentTextView = (TextView) textviewPage.findViewById(R.id.text);
+        TextView contentTextView = (TextView) textviewPage.findViewById(R.id.mText);
 
-        String contentString = getString(R.string.lorem);
+        // Instantiate a ViewPager and a PagerAdapter.
+        mPager = (ViewPager) findViewById(R.id.pager);
+
+        mContentString = getString(R.string.lorem);
         float horizontalMargin = getResources().getDimension(R.dimen.activity_horizontal_margin) * 2;
         float verticalMargin = getResources().getDimension(R.dimen.activity_vertical_margin) * 2;
 
@@ -60,47 +56,24 @@ public class MainActivity extends AppCompatActivity {
 
         TextPaint paint = contentTextView.getPaint();
 
-        //===========================================================
         //Working Out How Many Lines Can Be Entered In The Screen
         Paint.FontMetrics fm = paint.getFontMetrics();
         float fullHeight = fm.top - fm.bottom;
         fullHeight = Math.abs(fullHeight);
-        //===========================================================
 
-        int numChars = 0;
-        int lineCount = 0;
-        int maxLineCount = (int) ((screenHeight - (/*actionBarHeight + */ verticalMargin) )/fullHeight);
-        //contentTextView.setLines(maxLineCount);
+        int maxLineCount = (int) ((screenHeight - verticalMargin ) / fullHeight);
 
-        // contentString is the whole string of the book
-        int totalPages = 0;
-        while (contentString != null && contentString.length() != 0 )
-        {
-            while ((lineCount < maxLineCount) && (numChars < contentString.length())) {
-                numChars = numChars + paint.breakText(contentString.substring(numChars), true, screenWidth, null);
-                lineCount ++;
-            }
+        // add extra spaces at the bottom, remove 2 lines
+        maxLineCount -= 2;
 
-            // retrieve the String to be displayed in the current textbox
-            String toBeDisplayed = contentString.substring(0, numChars);
-            int nextIndex = numChars;
-            char nextChar = nextIndex < contentString.length() ? contentString.charAt(nextIndex) : ' ';
-            if (!Character.isWhitespace(nextChar)) {
-                toBeDisplayed = toBeDisplayed.substring(0, toBeDisplayed.lastIndexOf(" "));
-            }
-            numChars = toBeDisplayed.length();
-            contentString = contentString.substring(numChars);
-            pageContents.add(toBeDisplayed.trim());
+        ViewAndPaint  vp = new ViewAndPaint(paint, textviewPage, screenWidth, maxLineCount, mContentString);
 
-            numChars = 0;
-            lineCount = 0;
+        PagerTask pt = new PagerTask(this);
+        pt.execute(vp);
+    }
 
-            totalPages ++;
-        }
-
-        // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (ViewPager) findViewById(R.id.pager);
-        mPagerAdapter = new TestPagerAdapter(getSupportFragmentManager(), totalPages);
+    private void initViewPager(){
+        mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager(), 1);
         mPager.setAdapter(mPagerAdapter);
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -108,40 +81,64 @@ public class MainActivity extends AppCompatActivity {
                 showPageIndicator(position);
             }
         });
-
-        createPageIndicator();
-        //============================================================================================
-
     }
 
-    @SuppressWarnings("deprecation")
-    private void createPageIndicator() {
-        mPageIndicator = (LinearLayout) findViewById(R.id.pageIndicator);
-        for (int i = 0; i < pageContents.size(); i++) {
-            View view = new View(this);
-            ViewGroup.LayoutParams params = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
-            view.setLayoutParams(params );
-            view.setBackgroundDrawable(getResources().getDrawable(i == 0 ? R.drawable.current_page_indicator : R.drawable.indicator_background));
-            view.setTag(i);
-            mPageIndicator.addView(view);
+    public void onPageProcessedUpdate(ProgressTracker progress){
+        mPages = progress.pages;
+        // init the pager if necessary
+        if (mPagerAdapter == null){
+            initViewPager();
+            hideProgress();
+        }else {
+            ((MyPagerAdapter)mPagerAdapter).incrementPageCount();
         }
+        addPageIndicator(progress.totalPages);
     }
 
-    @SuppressWarnings("deprecation")
+    private void hideProgress(){
+        mProgressBar.setVisibility(View.GONE);
+    }
+
+    private void addPageIndicator(int pageNumber) {
+        mPageIndicator = (LinearLayout) findViewById(R.id.pageIndicator);
+        View view = new View(this);
+        ViewGroup.LayoutParams params = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT, 1f);
+        view.setLayoutParams(params );
+        view.setBackgroundDrawable(getResources().getDrawable(pageNumber == 0 ? R.drawable.current_page_indicator : R.drawable.indicator_background));
+        view.setTag(pageNumber);
+        mPageIndicator.addView(view);
+    }
+
     protected void showPageIndicator(int position) {
         try {
             mPageIndicator = (LinearLayout) findViewById(R.id.pageIndicator);
-            for (int i = 0; i < pageContents.size(); i++) {
-                View view = mPageIndicator.findViewWithTag(i);
-                view.setBackgroundDrawable(getResources().getDrawable(i == position ? R.drawable.current_page_indicator : R.drawable.indicator_background));
+            View selectedIndexIndicator = ((ViewGroup)mPageIndicator).getChildAt(position);
+            selectedIndexIndicator.setBackgroundDrawable(getResources().getDrawable(R.drawable.current_page_indicator));
+            // dicolorize the neighbours
+            if (position > 0){
+                View leftView = ((ViewGroup)mPageIndicator).getChildAt(position -1);
+                leftView.setBackgroundDrawable(getResources().getDrawable(R.drawable.indicator_background));
             }
+            if (position < mPages.size()){
+                View rightView = ((ViewGroup)mPageIndicator).getChildAt(position +1);
+                rightView.setBackgroundDrawable(getResources().getDrawable(R.drawable.indicator_background));
+            }
+
         } catch (Exception e) {
             Log.e(TAG, e.toString());
         }
     }
 
     public String getContents(int pageNumber){
-        return pageContents.get(pageNumber);
+        String page = String.valueOf(pageNumber);
+        String textBoundaries = mPages.get(page);
+        if (textBoundaries != null) {
+            String[] bounds = textBoundaries.split(",");
+            int startIndex = Integer.valueOf(bounds[0]);
+            int endIndex = Integer.valueOf(bounds[1]);
+            return mContentString.substring(startIndex, endIndex);
+        }
+        return "";
     }
 
     @Override
@@ -153,16 +150,40 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    static class ViewAndPaint {
+
+        public ViewGroup textviewPage;
+        public TextPaint paint;
+        public int screenWidth;
+        public int maxLineCount;
+        public String contentString;
+
+        public ViewAndPaint(TextPaint paint, ViewGroup textviewPage, int screenWidth, int maxLineCount, String contentString){
+            this.paint = paint;
+            this.textviewPage = textviewPage;
+            this.maxLineCount = maxLineCount;
+            this.contentString = contentString;
+            this.screenWidth = screenWidth;
+        }
+    }
+
+    static class ProgressTracker {
+
+        public int totalPages;
+        public Map<String, String> pages = new HashMap<String, String>();
+
+        public void addPage(int page, int startIndex, int endIndex) {
+            String thePage = String.valueOf(page);
+            String indexMarker = String.valueOf(startIndex) + "," + String.valueOf(endIndex);
+            pages.put(thePage, indexMarker);
+        }
     }
 }

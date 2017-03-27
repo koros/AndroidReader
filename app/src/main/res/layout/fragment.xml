@@ -4,11 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
     
-    <TextView
-        android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:text="@string/hello_world" />
+    <include
+        android:id="@+id/mText"
+        layout="@layout/text_view" />
 
 </LinearLayout>

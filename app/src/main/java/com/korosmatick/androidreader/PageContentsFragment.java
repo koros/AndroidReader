@@ -12,7 +12,7 @@ public class PageContentsFragment extends PageContentsFragmentBase {
 	@Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment, container, false);
-        TextView contentTextView = (TextView) rootView.findViewById(R.id.text);
+        TextView contentTextView = (TextView) rootView.findViewById(R.id.mText);
 		String contents = ((MainActivity)getActivity()).getContents(mPageNumber);
 		contentTextView.setText(contents);
         contentTextView.setMovementMethod(new ScrollingMovementMethod());
