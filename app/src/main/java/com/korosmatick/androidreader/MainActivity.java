@@ -32,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String mContentString = "";
 
+    private Display mDisplay = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,32 +46,38 @@ public class MainActivity extends AppCompatActivity {
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.pager);
-
         mContentString = getString(R.string.lorem);
-        float horizontalMargin = getResources().getDimension(R.dimen.activity_horizontal_margin) * 2;
-        float verticalMargin = getResources().getDimension(R.dimen.activity_vertical_margin) * 2;
-
         // obtaining screen dimensions
-        Display display = getWindowManager().getDefaultDisplay();
-        int screenWidth = (int) (display.getWidth() - horizontalMargin);
-        int screenHeight = display.getHeight();
+        mDisplay = getWindowManager().getDefaultDisplay();
 
-        TextPaint paint = contentTextView.getPaint();
+        ViewAndPaint  vp = new ViewAndPaint(contentTextView.getPaint(), textviewPage, getScreenWidth(), getMaxLineCount(contentTextView), mContentString);
+
+        PagerTask pt = new PagerTask(this);
+        pt.execute(vp);
+    }
+
+    private int getScreenWidth(){
+        float horizontalMargin = getResources().getDimension(R.dimen.activity_horizontal_margin) * 2;
+        int screenWidth = (int) (mDisplay.getWidth() - horizontalMargin);
+        return screenWidth;
+    }
+
+    private int getMaxLineCount(TextView view){
+        float verticalMargin = getResources().getDimension(R.dimen.activity_vertical_margin) * 2;
+        int screenHeight = mDisplay.getHeight();
+        TextPaint paint = view.getPaint();
 
         //Working Out How Many Lines Can Be Entered In The Screen
         Paint.FontMetrics fm = paint.getFontMetrics();
-        float fullHeight = fm.top - fm.bottom;
-        fullHeight = Math.abs(fullHeight);
+        float textHeight = fm.top - fm.bottom;
+        textHeight = Math.abs(textHeight);
 
-        int maxLineCount = (int) ((screenHeight - verticalMargin ) / fullHeight);
+        int maxLineCount = (int) ((screenHeight - verticalMargin ) / textHeight);
 
         // add extra spaces at the bottom, remove 2 lines
         maxLineCount -= 2;
 
-        ViewAndPaint  vp = new ViewAndPaint(paint, textviewPage, screenWidth, maxLineCount, mContentString);
-
-        PagerTask pt = new PagerTask(this);
-        pt.execute(vp);
+        return maxLineCount;
     }
 
     private void initViewPager(){
@@ -112,15 +120,15 @@ public class MainActivity extends AppCompatActivity {
     protected void showPageIndicator(int position) {
         try {
             mPageIndicator = (LinearLayout) findViewById(R.id.pageIndicator);
-            View selectedIndexIndicator = ((ViewGroup)mPageIndicator).getChildAt(position);
+            View selectedIndexIndicator = mPageIndicator.getChildAt(position);
             selectedIndexIndicator.setBackgroundDrawable(getResources().getDrawable(R.drawable.current_page_indicator));
             // dicolorize the neighbours
             if (position > 0){
-                View leftView = ((ViewGroup)mPageIndicator).getChildAt(position -1);
+                View leftView = mPageIndicator.getChildAt(position -1);
                 leftView.setBackgroundDrawable(getResources().getDrawable(R.drawable.indicator_background));
             }
             if (position < mPages.size()){
-                View rightView = ((ViewGroup)mPageIndicator).getChildAt(position +1);
+                View rightView = mPageIndicator.getChildAt(position +1);
                 rightView.setBackgroundDrawable(getResources().getDrawable(R.drawable.indicator_background));
             }
 

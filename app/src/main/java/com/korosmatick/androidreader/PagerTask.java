@@ -5,17 +5,16 @@ import android.os.AsyncTask;
 import android.text.TextPaint;
 
 
-
 /**
  * Created by gkoros on 12/03/2017.
  */
 
 public class PagerTask extends AsyncTask<MainActivity.ViewAndPaint, MainActivity.ProgressTracker, Void> {
 
-    private Context mContext;
+    private MainActivity activity;
 
-    public PagerTask(Context context){
-        this.mContext = context;
+    public PagerTask(MainActivity activity){
+        this.activity = activity;
     }
 
     protected Void doInBackground(MainActivity.ViewAndPaint... vps) {
@@ -37,7 +36,7 @@ public class PagerTask extends AsyncTask<MainActivity.ViewAndPaint, MainActivity
                 lineCount ++;
             }
 
-            // retrieve the String to be displayed in the current textview
+            // Retrieve the String to be displayed in the current textview
             String stringToBeDisplayed = vp.contentString.substring(0, numChars);
             int nextIndex = numChars;
             char nextChar = nextIndex < vp.contentString.length() ? vp.contentString.charAt(nextIndex) : ' ';
@@ -67,8 +66,7 @@ public class PagerTask extends AsyncTask<MainActivity.ViewAndPaint, MainActivity
 
     @Override
     protected void onProgressUpdate(MainActivity.ProgressTracker... values) {
-        ((MainActivity)mContext).onPageProcessedUpdate(values[0]);
+        activity.onPageProcessedUpdate(values[0]);
     }
-
 
 }
