@@ -25,14 +25,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private ViewPager mPager;
     private FragmentPagerAdapter mPagerAdapter;
-
     private Map<String, String> mPages = new HashMap<String, String>();
-    private LinearLayout mPageIndicator = null;
-    private ProgressBar mProgressBar = null;
-
+    private LinearLayout mPageIndicator;
+    private ProgressBar mProgressBar;
     private String mContentString = "";
-
-    private Display mDisplay = null;
+    private Display mDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             String[] bounds = textBoundaries.split(",");
             int startIndex = Integer.valueOf(bounds[0]);
             int endIndex = Integer.valueOf(bounds[1]);
-            return mContentString.substring(startIndex, endIndex);
+            return mContentString.substring(startIndex, endIndex).trim();
         }
         return "";
     }
